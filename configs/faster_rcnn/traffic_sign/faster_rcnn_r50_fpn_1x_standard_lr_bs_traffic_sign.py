@@ -1,5 +1,5 @@
 # The new config inherits a base config to highlight the necessary modification
-_base_ = '../retinanet_r50_fpn_1x_coco.py'
+_base_ = '../faster_rcnn_r50_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
@@ -15,8 +15,8 @@ img_norm_cfg = dict(mean=[123.675, 116.28, 103.53],
                         std=[58.395, 57.12, 57.375],
                         to_rgb=True)
 data = dict(
-    samples_per_gpu=2,  # Batch size of a single GPU
-    workers_per_gpu=2,  # Worker to pre-fetch data for each single GPU
+    samples_per_gpu=4,  # Batch size of a single GPU
+    workers_per_gpu=4,  # Worker to pre-fetch data for each single GPU
 
     train=dict(
         classes=classes,
@@ -80,3 +80,15 @@ data = dict(
     ),
 )
 
+
+# optimizer
+optimizer = dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001)
+optimizer_config = dict(grad_clip=None)
+# learning policy
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11])
+total_epochs = 12

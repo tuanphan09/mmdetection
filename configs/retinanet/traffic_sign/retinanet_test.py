@@ -3,7 +3,7 @@ _base_ = '../retinanet_r50_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
-    pretrained=None,
+    pretrained='/data2/zalo-ai-2020/byol-pytorch/models/resnet50.pt',
 )
 
 # Modify dataset related settings
@@ -60,8 +60,8 @@ data = dict(
     ),
     test=dict(
         classes=classes,
-        img_prefix='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_public_test/images/',
-        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_public_test/test.json',
+        img_prefix='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/images/',
+        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/val.json',
         pipeline= [
             dict(type='LoadImageFromFile'),
             dict(

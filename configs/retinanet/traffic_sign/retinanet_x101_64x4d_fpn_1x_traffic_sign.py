@@ -1,5 +1,5 @@
 # The new config inherits a base config to highlight the necessary modification
-_base_ = '../retinanet_r50_fpn_1x_coco.py'
+_base_ = '../retinanet_x101_64x4d_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
@@ -60,8 +60,8 @@ data = dict(
     ),
     test=dict(
         classes=classes,
-        img_prefix='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_public_test/images/',
-        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_public_test/test.json',
+        img_prefix='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/images/',
+        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/val.json',
         pipeline= [
             dict(type='LoadImageFromFile'),
             dict(

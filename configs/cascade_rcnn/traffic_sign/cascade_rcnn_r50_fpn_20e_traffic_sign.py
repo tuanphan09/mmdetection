@@ -1,5 +1,5 @@
 # The new config inherits a base config to highlight the necessary modification
-_base_ = '../retinanet_r50_fpn_1x_coco.py'
+_base_ = '../cascade_rcnn_r50_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
@@ -80,3 +80,6 @@ data = dict(
     ),
 )
 
+# learning policy
+lr_config = dict(step=[16, 19])
+total_epochs = 20

@@ -1,5 +1,5 @@
 # The new config inherits a base config to highlight the necessary modification
-_base_ = '../retinanet_r50_fpn_1x_coco.py'
+_base_ = '../faster_rcnn_r50_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
@@ -80,3 +80,13 @@ data = dict(
     ),
 )
 
+# learning policy
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=500,
+    warmup_ratio=0.001,
+    step=[8, 11, 13])
+total_epochs = 14
+
+resume_from = 'work_dirs/faster_rcnn_r50_fpn_1x_traffic_sign/epoch_12.pth'
