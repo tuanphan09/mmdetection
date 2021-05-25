@@ -1,19 +1,11 @@
 # The new config inherits a base config to highlight the necessary modification
-_base_ = '../cascade_rcnn_r50_fpn_1x_coco.py'
+_base_ = '../cascade_mask_rcnn_r50_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
     pretrained=None,
-    backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
-        out_indices=(0, 1, 2, 3),
-        frozen_stages=-1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
-        style='pytorch'),
-    roi_head=dict(bbox_head=[
+    roi_head=dict(
+        bbox_head=[
             dict(
                 type='Shared2FCBBoxHead',
                 in_channels=256,
@@ -64,7 +56,16 @@ model = dict(
                     use_sigmoid=False,
                     loss_weight=1.0),
                 loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
-        ])
+        ],
+        mask_head=dict(
+            type='FCNMaskHead',
+            num_convs=4,
+            in_channels=256,
+            conv_out_channels=256,
+            num_classes=7,
+            loss_mask=dict(
+                type='CrossEntropyLoss', use_mask=True, loss_weight=1.0)),
+    )
 )
 
 # Modify dataset related settings
@@ -82,19 +83,19 @@ data = dict(
     train=dict(
         classes=classes,
         img_prefix='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/images/',
-        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train.json',
+        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train_mask_wo_dup.json',
         pipeline= [
             dict(type='LoadImageFromFile'),
-            dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='LoadAnnotations', with_bbox=True, with_mask=True, poly2mask=False),
             dict(
                 type='Resize',
-                img_scale=(1622, 622), 
+                img_scale=[(1622, 622), (1800, 700)],
                 keep_ratio=True),
             dict(type='RandomFlip', flip_ratio=0.5),
             dict(type='Normalize', **img_norm_cfg),
             dict(type='Pad', size_divisor=32),
             dict(type='DefaultFormatBundle'),
-            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
+            dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels','gt_masks']),
         ]
     ),
 
@@ -139,6 +140,7 @@ data = dict(
         ]
     ),
 )
+evaluation = dict(metric=['bbox'])
 
 # learning policy
 lr_config = dict(step=[16, 19])

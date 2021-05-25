@@ -3,7 +3,7 @@ _base_ = '../cascade_rcnn_r50_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
-    pretrained=None,
+    pretrained='/data2/zalo-ai-2020/byol-pytorch/models/resnet50_e240.pt',
     backbone=dict(
         type='ResNet',
         depth=50,
@@ -82,13 +82,13 @@ data = dict(
     train=dict(
         classes=classes,
         img_prefix='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/images/',
-        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train.json',
+        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train_wo_dup.json',
         pipeline= [
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
             dict(
                 type='Resize',
-                img_scale=(1622, 622), 
+                img_scale=[(1622, 622), (1800, 700)],
                 keep_ratio=True),
             dict(type='RandomFlip', flip_ratio=0.5),
             dict(type='Normalize', **img_norm_cfg),
@@ -140,6 +140,13 @@ data = dict(
     ),
 )
 
+# optimizer
+optimizer = dict(
+        type='SGD',
+        lr=0.01,
+        momentum=0.9,
+)
 # learning policy
 lr_config = dict(step=[16, 19])
 total_epochs = 20
+      

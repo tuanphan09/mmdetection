@@ -1,0 +1,51 @@
+Document for using mmdetection
+
+
+1. Preprocess data
+
+- Step 1: split train - val (85% - 15%)
+
+	python3 tools/za_traffic/split_coco_ann.py --having-annotations --train_size 0.85 /data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train_traffic_sign_dataset.json /data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train.json /data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/val.json
+
+- Step 2: remove duplicated bboxes 
+
+	python tools/za_traffic/preprocess.py --in_ann ../za_traffic_2020/data/traffic_train/val.json --out_ann ../za_traffic_2020/data/traffic_train/val_wo_dup.json --rm_dup_bbox true
+
+2. Training
+
+- Fix data path in file config
+	python tools/train.py configs/cascade_rcnn/traffic_sign/cascade_rcnn_r50_fpn_20e_mstrain_wo_dup_traffic_sign.py
+
+- Choose epoch give best mAP on validation (from epoch 17 to 20)
+   - No TTA - test time augment
+	+ mAP on val: 39.3%
+	+ mAP on public test: 34.78%
+   - With TTA (flip + multiscale 1.2, 1.3, 1.4, 1.5)
+	+ mAP on val: 43.7%
+        + mAP on public test: 38.9%
+   - With TTA + soft nms (sigma 0.7, score_thres 0.001):
+	+ mAP on val: 49.2%
+        + mAP on public test: 42.9%
+   - With TTA + soft nms + post process:
+	+ mAP on val: 53%
+        + mAP on public test: 46.6%
+
+3. Evaluation
+
+- Prepare annotation format for test images
+
+	python tools/za_traffic/prepare_ann.py --example ../za_traffic_2020/data/traffic_train/val.json --img_dir ../za_traffic_2020/data/traffic_public_test/images --json_out ../za_traffic_2020/data/traffic_public_test/test.json
+
+- Change data + ann path for test data in config, result was saved in tmp/result.bbox.json
+	python tools/test.py configs/retinanet/traffic_sign/retinanet_r50_fpn_1x_traffic_sign.py work_dirs/retinanet_r50_fpn_1x_traffic_sign/latest.pth --format-only --options "jsonfile_prefix=./tmp/result"
+
+- Post processing
+
+python tools/za_traffic/post_process.py --json_in tmp/result.bbox.json --json_out tmp/final.json
+
+- Compute mAP using cocoapi
+
+	python tools/za_traffic/compute_map.py --gt /data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/val.json --det tmp/final.json
+
+3. More command
+- See usage.sh

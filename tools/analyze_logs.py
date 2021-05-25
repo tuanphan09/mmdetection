@@ -70,12 +70,30 @@ def plot_curve(log_dicts, args):
                     iters = log_dict[epoch]['iter']
                     if log_dict[epoch]['mode'][-1] == 'val':
                         iters = iters[:-1]
-                    xs.append(
-                        np.array(iters) + (epoch - 1) * num_iters_per_epoch)
-                    ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
+                    x_values = np.array(iters) / num_iters_per_epoch + epoch - 1
+                    y_values = np.array(log_dict[epoch][metric][:len(iters)])
+                    if args.point_per_epoch > 0 and len(x_values) > args.point_per_epoch:
+                        stride = len(x_values) // args.point_per_epoch 
+                        #print("stride: {}".format(stride))
+                        smooth_x_values = []
+                        smooth_y_values = []
+                         
+                        for idx in range(stride, len(x_values), stride):
+                            if epoch == 1 and idx == stride:
+                                continue
+                            smooth_x_values.append(x_values[idx])
+                            smooth_y_values.append(np.mean(y_values[idx - stride : idx]))
+                        x_values = np.array(smooth_x_values)
+                        y_values = np.array(smooth_y_values)
+
+                    xs.append(x_values)
+                    ys.append(y_values)
                 xs = np.concatenate(xs)
                 ys = np.concatenate(ys)
-                plt.xlabel('iter')
+                if args.point_per_epoch > 0:
+                    plt.xlabel('epoch')
+                else:
+                    plt.xlabel('iter')
                 plt.plot(
                     xs, ys, label=legend[i * num_metrics + j], linewidth=0.5)
             plt.legend()
@@ -115,6 +133,7 @@ def add_plot_parser(subparsers):
     parser_plt.add_argument(
         '--style', type=str, default='dark', help='style of plt')
     parser_plt.add_argument('--out', type=str, default=None)
+    parser_plt.add_argument('--point_per_epoch', type=int, default=0, help='Smooth')
 
 
 def add_time_parser(subparsers):

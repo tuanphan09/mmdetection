@@ -3,68 +3,7 @@ _base_ = '../cascade_rcnn_r50_fpn_1x_coco.py'
 
 # We also need to change the num_classes in head to match the dataset's annotation
 model = dict(
-    pretrained=None,
-    backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
-        out_indices=(0, 1, 2, 3),
-        frozen_stages=-1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
-        style='pytorch'),
-    roi_head=dict(bbox_head=[
-            dict(
-                type='Shared2FCBBoxHead',
-                in_channels=256,
-                fc_out_channels=1024,
-                roi_feat_size=7,
-                num_classes=7,
-                bbox_coder=dict(
-                    type='DeltaXYWHBBoxCoder',
-                    target_means=[0.0, 0.0, 0.0, 0.0],
-                    target_stds=[0.1, 0.1, 0.2, 0.2]),
-                reg_class_agnostic=True,
-                loss_cls=dict(
-                    type='CrossEntropyLoss',
-                    use_sigmoid=False,
-                    loss_weight=1.0),
-                loss_bbox=dict(type='SmoothL1Loss', beta=1.0,
-                               loss_weight=1.0)),
-            dict(
-                type='Shared2FCBBoxHead',
-                in_channels=256,
-                fc_out_channels=1024,
-                roi_feat_size=7,
-                num_classes=7,
-                bbox_coder=dict(
-                    type='DeltaXYWHBBoxCoder',
-                    target_means=[0.0, 0.0, 0.0, 0.0],
-                    target_stds=[0.05, 0.05, 0.1, 0.1]),
-                reg_class_agnostic=True,
-                loss_cls=dict(
-                    type='CrossEntropyLoss',
-                    use_sigmoid=False,
-                    loss_weight=1.0),
-                loss_bbox=dict(type='SmoothL1Loss', beta=1.0,
-                               loss_weight=1.0)),
-            dict(
-                type='Shared2FCBBoxHead',
-                in_channels=256,
-                fc_out_channels=1024,
-                roi_feat_size=7,
-                num_classes=7,
-                bbox_coder=dict(
-                    type='DeltaXYWHBBoxCoder',
-                    target_means=[0.0, 0.0, 0.0, 0.0],
-                    target_stds=[0.033, 0.033, 0.067, 0.067]),
-                reg_class_agnostic=True,
-                loss_cls=dict(
-                    type='CrossEntropyLoss',
-                    use_sigmoid=False,
-                    loss_weight=1.0),
-                loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
-        ])
+    pretrained='/data2/zalo-ai-2020/byol-pytorch/models/resnet50_e60.pt',
 )
 
 # Modify dataset related settings
@@ -88,7 +27,8 @@ data = dict(
             dict(type='LoadAnnotations', with_bbox=True),
             dict(
                 type='Resize',
-                img_scale=(1622, 622), 
+                img_scale=(1622, 622),
+                multiscale_mode='value',
                 keep_ratio=True),
             dict(type='RandomFlip', flip_ratio=0.5),
             dict(type='Normalize', **img_norm_cfg),

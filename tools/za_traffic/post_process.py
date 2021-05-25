@@ -22,14 +22,19 @@ def save_coco(file, info, images, annotations, categories):
 def main(args):
     with open(args.json_in, 'rt', encoding='UTF-8') as json_file:
         annotations = json.load(json_file)
+        final_annotations = []
         for i, ann in enumerate(annotations):
             # print(ann)
-            ann["segmentation"] = []
-            ann["area"] = 0
-            ann["iscrowd"] = 0
-            ann["id"] = i
+            ann["bbox"] = [ round(i - 0.3) for i in ann["bbox"] ] 
+            ann["score"] = round(ann["score"], 5)
+            #ann["segmentation"] = []
+            #ann["area"] = 0
+            #ann["iscrowd"] = 0
+            #ann["id"] = i
+            if ann["score"] > -0.001:
+                final_annotations.append(ann) 
 
     with open(args.json_out, 'wt', encoding='UTF-8') as outfile:
-        json.dump(annotations, outfile)
+        json.dump(final_annotations, outfile, separators=(',',':'))
 
 main(args)

@@ -82,13 +82,13 @@ data = dict(
     train=dict(
         classes=classes,
         img_prefix='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/images/',
-        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train.json',
+        ann_file='/data2/zalo-ai-2020/za_traffic_2020/data/traffic_train/train_wo_dup.json',
         pipeline= [
             dict(type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
             dict(
                 type='Resize',
-                img_scale=(1622, 622), 
+                img_scale=[(1565, 600), (1850, 710)],
                 keep_ratio=True),
             dict(type='RandomFlip', flip_ratio=0.5),
             dict(type='Normalize', **img_norm_cfg),
@@ -139,7 +139,13 @@ data = dict(
         ]
     ),
 )
+optimizer = dict(type='SGD', lr=0.015, momentum=0.9, weight_decay=0.0001)
 
 # learning policy
-lr_config = dict(step=[16, 19])
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=1000,
+    warmup_ratio=0.01,
+    step=[16, 19])
 total_epochs = 20
